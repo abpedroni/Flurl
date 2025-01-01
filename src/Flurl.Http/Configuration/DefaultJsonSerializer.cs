@@ -16,7 +16,7 @@ namespace Flurl.Http.Configuration
 		/// </summary>
 		/// <param name="options">Options to control (de)serialization behavior.</param>
 		public DefaultJsonSerializer(JsonSerializerOptions options = null) {
-			_options = options ?? new JsonSerializerOptions();
+			_options = options ?? new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 		}
 
 		/// <summary>
@@ -35,6 +35,8 @@ namespace Flurl.Http.Configuration
 		/// Deserializes the specified stream to an object of type T.
 		/// </summary>
 		/// <param name="stream">The stream to deserialize.</param>
-		public T Deserialize<T>(Stream stream) => stream.Length == 0 ? default : JsonSerializer.Deserialize<T>(stream, _options);
+		public T Deserialize<T>(Stream stream) => stream.CanSeek && stream.Length == 0
+			? default
+			: JsonSerializer.Deserialize<T>(stream, _options);
 	}
 }

@@ -11,6 +11,11 @@ namespace Flurl.Http
 	public class FlurlCall
 	{
 		/// <summary>
+		/// The IFlurlClient used to make this call.
+		/// </summary>
+		public IFlurlClient Client { get; set; }
+
+		/// <summary>
 		/// The IFlurlRequest associated with this call.
 		/// </summary>
 		public IFlurlRequest Request { get; set; }
@@ -29,11 +34,6 @@ namespace Flurl.Http
 		/// The IFlurlResponse associated with this call if the call completed, otherwise null.
 		/// </summary>
 		public IFlurlResponse Response { get; set; }
-
-		/// <summary>
-		/// The FlurlCall that received a 3xx response and automatically triggered this call.
-		/// </summary>
-		public FlurlCall RedirectedFrom { get; set; }
 
 		/// <summary>
 		/// If this call has a 3xx response and Location header, contains information about how to handle the redirect.

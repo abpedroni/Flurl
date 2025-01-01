@@ -25,6 +25,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> SendJsonAsync(this IFlurlRequest request, HttpMethod verb, object body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedJsonContent(request.Settings.JsonSerializer.Serialize(body));
 			return request.SendAsync(verb, content, completionOption, cancellationToken);
 		}
@@ -39,6 +40,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> SendStringAsync(this IFlurlRequest request, HttpMethod verb, string body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedStringContent(body);
 			return request.SendAsync(verb, content, completionOption, cancellationToken);
 		}
@@ -53,6 +55,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> SendUrlEncodedAsync(this IFlurlRequest request, HttpMethod verb, object body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedUrlEncodedContent(request.Settings.UrlEncodedSerializer.Serialize(body));
 			return request.SendAsync(verb, content, completionOption, cancellationToken);
 		}
@@ -133,6 +136,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PostJsonAsync(this IFlurlRequest request, object body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedJsonContent(request.Settings.JsonSerializer.Serialize(body));
 			return request.SendAsync(HttpMethod.Post, content, completionOption, cancellationToken);
 		}
@@ -146,6 +150,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PostStringAsync(this IFlurlRequest request, string body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedStringContent(body);
 			return request.SendAsync(HttpMethod.Post, content, completionOption, cancellationToken);
 		}
@@ -159,6 +164,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PostUrlEncodedAsync(this IFlurlRequest request, object body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedUrlEncodedContent(request.Settings.UrlEncodedSerializer.Serialize(body));
 			return request.SendAsync(HttpMethod.Post, content, completionOption, cancellationToken);
 		}
@@ -195,6 +201,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PutJsonAsync(this IFlurlRequest request, object body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedJsonContent(request.Settings.JsonSerializer.Serialize(body));
 			return request.SendAsync(HttpMethod.Put, content, completionOption, cancellationToken);
 		}
@@ -208,6 +215,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PutStringAsync(this IFlurlRequest request, string body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedStringContent(body);
 			return request.SendAsync(HttpMethod.Put, content, completionOption, cancellationToken);
 		}
@@ -244,6 +252,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PatchJsonAsync(this IFlurlRequest request, object body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedJsonContent(request.Settings.JsonSerializer.Serialize(body));
 			return request.SendAsync(new HttpMethod("PATCH"), content, completionOption, cancellationToken);
 		}
@@ -257,6 +266,7 @@ namespace Flurl.Http
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>A Task whose result is the received IFlurlResponse.</returns>
 		public static Task<IFlurlResponse> PatchStringAsync(this IFlurlRequest request, string body, HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead, CancellationToken cancellationToken = default) {
+			request.EnsureClient();
 			var content = new CapturedStringContent(body);
 			return request.SendAsync(new HttpMethod("PATCH"), content, completionOption, cancellationToken);
 		}
@@ -648,8 +658,8 @@ namespace Flurl.Http
 		/// <param name="url">This Flurl.Url.</param>
 		/// <param name="action">A delegate defining the Settings changes.</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest ConfigureRequest(this Url url, Action<FlurlHttpSettings> action) {
-			return new FlurlRequest(url).ConfigureRequest(action);
+		public static IFlurlRequest WithSettings(this Url url, Action<FlurlHttpSettings> action) {
+			return new FlurlRequest(url).WithSettings(action);
 		}
 		
 		/// <summary>
@@ -683,12 +693,12 @@ namespace Flurl.Http
 		}
 		
 		/// <summary>
-		/// Creates a new FlurlRequest and adds an HttpStatusCode which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.
+		/// Creates a new FlurlRequest and adds one or more response status codes which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.
 		/// </summary>
 		/// <param name="url">This Flurl.Url.</param>
-		/// <param name="statusCodes">The HttpStatusCode(s) to allow.</param>
+		/// <param name="statusCodes">One or more response status codes that, when received, will not cause an exception to be thrown.</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest AllowHttpStatus(this Url url, params HttpStatusCode[] statusCodes) {
+		public static IFlurlRequest AllowHttpStatus(this Url url, params int[] statusCodes) {
 			return new FlurlRequest(url).AllowHttpStatus(statusCodes);
 		}
 		
@@ -709,6 +719,86 @@ namespace Flurl.Http
 		/// <returns>A new IFlurlRequest.</returns>
 		public static IFlurlRequest WithAutoRedirect(this Url url, bool enabled) {
 			return new FlurlRequest(url).WithAutoRedirect(enabled);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new BeforeCall event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Action to perform when the BeforeCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest BeforeCall(this Url url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).BeforeCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous BeforeCall event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Async action to perform when the BeforeCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest BeforeCall(this Url url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).BeforeCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new AfterCall event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Action to perform when the AfterCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest AfterCall(this Url url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).AfterCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous AfterCall event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Async action to perform when the AfterCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest AfterCall(this Url url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).AfterCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new OnError event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Action to perform when the OnError event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnError(this Url url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).OnError(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous OnError event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Async action to perform when the OnError event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnError(this Url url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).OnError(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new OnRedirect event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Action to perform when the OnRedirect event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnRedirect(this Url url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).OnRedirect(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous OnRedirect event handler.
+		/// </summary>
+		/// <param name="url">This Flurl.Url.</param>
+		/// <param name="action">Async action to perform when the OnRedirect event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnRedirect(this Url url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).OnRedirect(action);
 		}
 		
 		/// <summary>
@@ -1087,8 +1177,8 @@ namespace Flurl.Http
 		/// <param name="url">This URL.</param>
 		/// <param name="action">A delegate defining the Settings changes.</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest ConfigureRequest(this string url, Action<FlurlHttpSettings> action) {
-			return new FlurlRequest(url).ConfigureRequest(action);
+		public static IFlurlRequest WithSettings(this string url, Action<FlurlHttpSettings> action) {
+			return new FlurlRequest(url).WithSettings(action);
 		}
 		
 		/// <summary>
@@ -1122,12 +1212,12 @@ namespace Flurl.Http
 		}
 		
 		/// <summary>
-		/// Creates a new FlurlRequest and adds an HttpStatusCode which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.
+		/// Creates a new FlurlRequest and adds one or more response status codes which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.
 		/// </summary>
 		/// <param name="url">This URL.</param>
-		/// <param name="statusCodes">The HttpStatusCode(s) to allow.</param>
+		/// <param name="statusCodes">One or more response status codes that, when received, will not cause an exception to be thrown.</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest AllowHttpStatus(this string url, params HttpStatusCode[] statusCodes) {
+		public static IFlurlRequest AllowHttpStatus(this string url, params int[] statusCodes) {
 			return new FlurlRequest(url).AllowHttpStatus(statusCodes);
 		}
 		
@@ -1148,6 +1238,86 @@ namespace Flurl.Http
 		/// <returns>A new IFlurlRequest.</returns>
 		public static IFlurlRequest WithAutoRedirect(this string url, bool enabled) {
 			return new FlurlRequest(url).WithAutoRedirect(enabled);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new BeforeCall event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Action to perform when the BeforeCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest BeforeCall(this string url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).BeforeCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous BeforeCall event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Async action to perform when the BeforeCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest BeforeCall(this string url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).BeforeCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new AfterCall event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Action to perform when the AfterCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest AfterCall(this string url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).AfterCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous AfterCall event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Async action to perform when the AfterCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest AfterCall(this string url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).AfterCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new OnError event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Action to perform when the OnError event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnError(this string url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).OnError(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous OnError event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Async action to perform when the OnError event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnError(this string url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).OnError(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new OnRedirect event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Action to perform when the OnRedirect event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnRedirect(this string url, Action<FlurlCall> action) {
+			return new FlurlRequest(url).OnRedirect(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous OnRedirect event handler.
+		/// </summary>
+		/// <param name="url">This URL.</param>
+		/// <param name="action">Async action to perform when the OnRedirect event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnRedirect(this string url, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(url).OnRedirect(action);
 		}
 		
 		/// <summary>
@@ -1526,8 +1696,8 @@ namespace Flurl.Http
 		/// <param name="uri">This System.Uri.</param>
 		/// <param name="action">A delegate defining the Settings changes.</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest ConfigureRequest(this Uri uri, Action<FlurlHttpSettings> action) {
-			return new FlurlRequest(uri).ConfigureRequest(action);
+		public static IFlurlRequest WithSettings(this Uri uri, Action<FlurlHttpSettings> action) {
+			return new FlurlRequest(uri).WithSettings(action);
 		}
 		
 		/// <summary>
@@ -1561,12 +1731,12 @@ namespace Flurl.Http
 		}
 		
 		/// <summary>
-		/// Creates a new FlurlRequest and adds an HttpStatusCode which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.
+		/// Creates a new FlurlRequest and adds one or more response status codes which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.
 		/// </summary>
 		/// <param name="uri">This System.Uri.</param>
-		/// <param name="statusCodes">The HttpStatusCode(s) to allow.</param>
+		/// <param name="statusCodes">One or more response status codes that, when received, will not cause an exception to be thrown.</param>
 		/// <returns>A new IFlurlRequest.</returns>
-		public static IFlurlRequest AllowHttpStatus(this Uri uri, params HttpStatusCode[] statusCodes) {
+		public static IFlurlRequest AllowHttpStatus(this Uri uri, params int[] statusCodes) {
 			return new FlurlRequest(uri).AllowHttpStatus(statusCodes);
 		}
 		
@@ -1587,6 +1757,86 @@ namespace Flurl.Http
 		/// <returns>A new IFlurlRequest.</returns>
 		public static IFlurlRequest WithAutoRedirect(this Uri uri, bool enabled) {
 			return new FlurlRequest(uri).WithAutoRedirect(enabled);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new BeforeCall event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Action to perform when the BeforeCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest BeforeCall(this Uri uri, Action<FlurlCall> action) {
+			return new FlurlRequest(uri).BeforeCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous BeforeCall event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Async action to perform when the BeforeCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest BeforeCall(this Uri uri, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(uri).BeforeCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new AfterCall event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Action to perform when the AfterCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest AfterCall(this Uri uri, Action<FlurlCall> action) {
+			return new FlurlRequest(uri).AfterCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous AfterCall event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Async action to perform when the AfterCall event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest AfterCall(this Uri uri, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(uri).AfterCall(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new OnError event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Action to perform when the OnError event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnError(this Uri uri, Action<FlurlCall> action) {
+			return new FlurlRequest(uri).OnError(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous OnError event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Async action to perform when the OnError event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnError(this Uri uri, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(uri).OnError(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new OnRedirect event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Action to perform when the OnRedirect event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnRedirect(this Uri uri, Action<FlurlCall> action) {
+			return new FlurlRequest(uri).OnRedirect(action);
+		}
+		
+		/// <summary>
+		/// Creates a new FlurlRequest and adds a new asynchronous OnRedirect event handler.
+		/// </summary>
+		/// <param name="uri">This System.Uri.</param>
+		/// <param name="action">Async action to perform when the OnRedirect event is raised.</param>
+		/// <returns>A new IFlurlRequest.</returns>
+		public static IFlurlRequest OnRedirect(this Uri uri, Func<FlurlCall, Task> action) {
+			return new FlurlRequest(uri).OnRedirect(action);
 		}
 		
 	}

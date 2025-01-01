@@ -53,6 +53,31 @@ namespace Flurl.CodeGen
 			yield return Create("SetQueryParams", "Creates a new Url object from the string and adds multiple parameters without values to the query.")
 				.AddArg("names", "params string[]", "Names of query parameters");
 
+			yield return Create("AppendQueryParam", "Creates a new Url object from the string and adds a parameter to the query.")
+				.AddArg("name", "string", "Name of query parameter")
+				.AddArg("value", "object", "Value of query parameter")
+				.AddArg("nullValueHandling", "NullValueHandling", "Indicates how to handle null values. Defaults to Remove (any existing)", "NullValueHandling.Remove");
+
+			yield return Create("AppendQueryParam", "Creates a new Url object from the string and adds a parameter to the query.")
+				.AddArg("name", "string", "Name of query parameter")
+				.AddArg("value", "string", "Value of query parameter")
+				.AddArg("isEncoded", "bool", "Set to true to indicate the value is already URL-encoded. Defaults to false.", "false")
+				.AddArg("nullValueHandling", "NullValueHandling", "Indicates how to handle null values. Defaults to Remove (any existing).", "NullValueHandling.Remove");
+
+			yield return Create("AppendQueryParam", "Creates a new Url object from the string and adds a parameter without a value to the query.")
+				.AddArg("name", "string", "Name of query parameter");
+
+			yield return Create("AppendQueryParam", "Creates a new Url object from the string, parses values object into name/value pairs, and adds them to the query, overwriting any that already exist.")
+				.AddArg("values", "object", "Typically an anonymous object, ie: new { x = 1, y = 2 }")
+				.AddArg("nullValueHandling", "NullValueHandling", "Indicates how to handle null values. Defaults to Remove (any existing)", "NullValueHandling.Remove");
+
+			yield return Create("AppendQueryParam", "Creates a new Url object from the string and adds multiple parameters without values to the query.")
+				.AddArg("names", "IEnumerable<string>", "Names of query parameters.");
+
+			yield return Create("AppendQueryParam", "Creates a new Url object from the string and adds multiple parameters without values to the query.")
+				.AddArg("names", "params string[]", "Names of query parameters");
+
+
 			yield return Create("RemoveQueryParam", "Creates a new Url object from the string and removes a name/value pair from the query by name.")
 				.AddArg("name", "string", "Query string parameter name to remove");
 
@@ -98,7 +123,7 @@ namespace Flurl.CodeGen
 				.AddArg("name", "string", "The cookie name.")
 				.AddArg("value", "object", "The cookie value.");
 			yield return Create("WithCookies", "Creates a new FlurlRequest and adds name-value pairs to its Cookie header based on property names/values of the provided object, or keys/values if object is a dictionary. " +
-			                                   "To automatically maintain a cookie \"session\", consider using a CookieJar or CookieSession instead.")
+											   "To automatically maintain a cookie \"session\", consider using a CookieJar or CookieSession instead.")
 				.AddArg("values", "object", "Names/values of HTTP cookies to set. Typically an anonymous object or IDictionary.");
 			yield return Create("WithCookies", "Creates a new FlurlRequest and sets the CookieJar associated with this request, which will be updated with any Set-Cookie headers present in the response and is suitable for reuse in subsequent requests.")
 				.AddArg("cookieJar", "CookieJar", "The CookieJar.");
@@ -106,7 +131,7 @@ namespace Flurl.CodeGen
 				.AddArg("cookieJar", "CookieJar", "The created CookieJar, which can be reused in subsequent requests.", isOut: true);
 
 			// settings extensions
-			yield return Create("ConfigureRequest", "Creates a new FlurlRequest and allows changing its Settings inline.")
+			yield return Create("WithSettings", "Creates a new FlurlRequest and allows changing its Settings inline.")
 				.AddArg("action", "Action<FlurlHttpSettings>", "A delegate defining the Settings changes.");
 			yield return Create("WithTimeout", "Creates a new FlurlRequest and sets the request timeout.")
 				.AddArg("timespan", "TimeSpan", "Time to wait before the request times out.");
@@ -114,11 +139,19 @@ namespace Flurl.CodeGen
 				.AddArg("seconds", "int", "Seconds to wait before the request times out.");
 			yield return Create("AllowHttpStatus", "Creates a new FlurlRequest and adds a pattern representing an HTTP status code or range of codes which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.")
 				.AddArg("pattern", "string", "Examples: \"3xx\", \"100,300,600\", \"100-299,6xx\"");
-			yield return Create("AllowHttpStatus", "Creates a new FlurlRequest and adds an HttpStatusCode which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.")
-				.AddArg("statusCodes", "params HttpStatusCode[]", "The HttpStatusCode(s) to allow.");
+			yield return Create("AllowHttpStatus", "Creates a new FlurlRequest and adds one or more response status codes which (in addition to 2xx) will NOT result in a FlurlHttpException being thrown.")
+				.AddArg("statusCodes", "params int[]", "One or more response status codes that, when received, will not cause an exception to be thrown.");
 			yield return Create("AllowAnyHttpStatus", "Creates a new FlurlRequest and configures it to allow any returned HTTP status without throwing a FlurlHttpException.");
 			yield return Create("WithAutoRedirect", "Creates a new FlurlRequest and configures whether redirects are automatically followed.")
 				.AddArg("enabled", "bool", "true if Flurl should automatically send a new request to the redirect URL, false if it should not.");
+
+			// event handler extensions
+			foreach (var name in new[] { "BeforeCall", "AfterCall", "OnError", "OnRedirect" }) {
+				yield return Create(name, $"Creates a new FlurlRequest and adds a new {name} event handler.")
+					.AddArg("action", "Action<FlurlCall>", $"Action to perform when the {name} event is raised.");
+				yield return Create(name, $"Creates a new FlurlRequest and adds a new asynchronous {name} event handler.")
+					.AddArg("action", "Func<FlurlCall, Task>", $"Async action to perform when the {name} event is raised.");
+			}
 		}
 
 		/// <summary>
@@ -132,6 +165,13 @@ namespace Flurl.CodeGen
 			where IsSupportedCombo(verb, reqType, respType, extendedArg.Type)
 			let isGenenric = (respType == "Json")
 			select new HttpExtensionMethod(verb, isGenenric, reqType, respType) { ExtendedTypeArg = extendedArg };
+
+		/// <summary>
+		/// Additional HTTP-calling methods that return dynamic or IList&lt;dynamic&gt;, supported only with Flurl.Http.Newtonsoft.
+		/// </summary>
+		public static IEnumerable<HttpExtensionMethod> GetDynamicReturningExtensions(MethodArg extendedArg) =>
+			from respType in new[] { "Json", "JsonList" }
+			select new HttpExtensionMethod("Get", false, null, respType) { ExtendedTypeArg = extendedArg };
 
 		public static IEnumerable<ExtensionMethod> GetMiscAsyncExtensions(MethodArg extendedArg) {
 			// a couple oddballs
